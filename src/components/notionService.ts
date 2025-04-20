@@ -2,10 +2,10 @@ import { Client } from '@notionhq/client';
 
 // Initialize the Notion client
 const notion = new Client({
-  auth: process.env.NEXT_PUBLIC_NOTION_API_KEY,
+  auth: import.meta.env.VITE_NOTION_API_KEY,
 });
 
-const databaseId = process.env.NEXT_PUBLIC_NOTION_DATABASE_ID;
+const databaseId = import.meta.env.VITE_NOTION_DATABASE_ID;
 
 export const addEmailToNotion = async (email: string) => {
   try {

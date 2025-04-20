@@ -1,17 +1,33 @@
 import React, { useState } from 'react';
 import Button from './Button';
 import Notification from './Notification';
+import { addEmailToNotion } from './notionService';
 
 const EmailForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [showNotification, setShowNotification] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Email submitted:', email);
-    setEmail('');
-    setShowNotification(true);
+    setIsSubmitting(true);
+    setError(null);
+    
+    try {
+      // Submit email to Notion database
+      await addEmailToNotion(email);
+      
+      // Clear form and show success notification
+      setEmail('');
+      setShowNotification(true);
+    } catch (err) {
+      console.error('Failed to submit email:', err);
+      setError('Failed to submit. Please try again later.');
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -23,10 +39,20 @@ const EmailForm: React.FC = () => {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
           required
+          disabled={isSubmitting}
           className="flex-grow text-sm rounded-full px-4 py-2 bg-white bg-opacity-95 border-none focus:outline-none focus:ring-2 focus:ring-white"
         />
-        <Button type="submit">Notify me</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Submitting...' : 'Notify me'}
+        </Button>
       </form>
+      
+      {error && (
+        <div className="mt-2 text-red-300 text-sm">
+          {error}
+        </div>
+      )}
+      
       <Notification 
         show={showNotification} 
         onClose={() => setShowNotification(false)} 
@@ -35,4 +61,4 @@ const EmailForm: React.FC = () => {
   );
 };
 
-export default EmailForm
+export default EmailForm;
